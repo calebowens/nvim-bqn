@@ -2,14 +2,30 @@ local buf = nil
 local win = nil
 
 local function check_buf()
-	if buf == nil or win == nil then
-		local prev = vim.api.nvim_get_current_win()
-		buf = vim.api.nvim_create_buf(true, true)
-		vim.cmd("below 3split")
-		vim.api.nvim_win_set_buf(vim.api.nvim_get_current_win(), buf)
-		win = vim.api.nvim_get_current_win()
-		vim.api.nvim_set_current_win(prev)
-	end
+    if win == nil or not vim.api.nvim_win_is_valid(win) then
+        local prev = vim.api.nvim_get_current_win()
+        if buf == nil then
+            buf = vim.api.nvim_create_buf(false, false)
+        end
+        vim.api.nvim_buf_set_name(buf, "BQN")
+        vim.api.nvim_buf_set_option(buf, "buftype", "nofile")
+        vim.api.nvim_buf_set_option(buf, "swapfile", false)
+        vim.api.nvim_buf_set_option(buf, "modeline", false)
+
+        vim.cmd("below 3split")
+        vim.api.nvim_win_set_buf(vim.api.nvim_get_current_win(), buf)
+        win = vim.api.nvim_get_current_win()
+        vim.api.nvim_set_current_win(prev)
+    elseif vim.api.nvim_win_is_valid(win) then
+        local winid = vim.api.nvim_eval("bufwinid(" .. buf .. ")")
+        if winid == -1 then
+            local prev = vim.api.nvim_get_current_win()
+            vim.cmd("below 3split")
+            vim.api.nvim_win_set_buf(vim.api.nvim_get_current_win(), buf)
+            win = vim.api.nvim_get_current_win()
+            vim.api.nvim_set_current_win(prev)
+        end
+    end
 end
 
 function evalBQN(from, to, pretty)
@@ -38,10 +54,10 @@ function evalBQN(from, to, pretty)
     end
 
     vim.api.nvim_buf_set_lines(buf, -1, -1, false, lines)
-    vim.api.nvim_win_set_cursor(win, {vim.api.nvim_buf_line_count(buf), 0})
     vim.api.nvim_win_set_height(win, line_count)
+    vim.api.nvim_win_set_cursor(win, {vim.api.nvim_buf_line_count(buf), 0})
 end
 
 return {
-	evalBQN = evalBQN,
+    evalBQN = evalBQN,
 }
