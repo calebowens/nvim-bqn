@@ -1,2 +1,3 @@
-nmap <buffer> <CR> :EvalBQNRange<CR>
-vmap <buffer> <CR> :EvalBQNRange<CR>
+nnoremap <buffer> <CR> :EvalBQNRange<CR>
+nnoremap <buffer> <C-Space> :EvalBQNFile<CR>
+xnoremap <buffer> <CR> :EvalBQNRange<CR>
