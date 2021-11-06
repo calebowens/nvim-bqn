@@ -11,10 +11,10 @@ local function check_buf()
         vim.api.nvim_buf_set_option(buf, "buftype", "nofile")
         vim.api.nvim_buf_set_option(buf, "swapfile", false)
         vim.api.nvim_buf_set_option(buf, "modeline", false)
-
         vim.cmd("below 3split")
         vim.api.nvim_win_set_buf(vim.api.nvim_get_current_win(), buf)
         win = vim.api.nvim_get_current_win()
+        vim.api.nvim_win_set_option(win, "wrap", false)
         vim.api.nvim_set_current_win(prev)
     elseif vim.api.nvim_win_is_valid(win) then
         local winid = vim.api.nvim_eval("bufwinid(" .. buf .. ")")
