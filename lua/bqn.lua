@@ -40,12 +40,17 @@ function evalBQN(from, to, pretty)
     program = string.gsub(program, '"', '\\"')
     program = string.gsub(program, '`', '\\`')
 
-    flag = "e"
+    local flag = "e"
     if pretty then
         flag = "p"
     end
 
-    local executable = assert(io.popen("BQN -" .. flag .. " \"" .. program .. "\""))
+    local found, bqn = pcall(vim.api.nvim_get_var, "nvim_bqn")
+    if not found then
+        bqn = "BQN"
+    end
+
+    local executable = assert(io.popen(bqn .. " -" .. flag .. " \"" .. program .. "\""))
     local output = executable:read('*all')
     executable:close()
 
