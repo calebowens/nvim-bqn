@@ -1,36 +1,28 @@
-local buf = nil
-local win = nil
+local ns = vim.api.nvim_create_namespace('bqnout')
 
-local function check_buf()
-    if win == nil or not vim.api.nvim_win_is_valid(win) then
-        local prev = vim.api.nvim_get_current_win()
-        if buf == nil then
-            buf = vim.api.nvim_create_buf(false, false)
-        end
-        vim.api.nvim_buf_set_name(buf, "BQN")
-        vim.api.nvim_buf_set_option(buf, "buftype", "nofile")
-        vim.api.nvim_buf_set_option(buf, "swapfile", false)
-        vim.api.nvim_buf_set_option(buf, "modeline", false)
-        vim.cmd("below 3split")
-        vim.api.nvim_win_set_buf(vim.api.nvim_get_current_win(), buf)
-        win = vim.api.nvim_get_current_win()
-        vim.api.nvim_win_set_option(win, "wrap", false)
-        vim.api.nvim_set_current_win(prev)
-    elseif vim.api.nvim_win_is_valid(win) then
-        local winid = vim.api.nvim_eval("bufwinid(" .. buf .. ")")
-        if winid == -1 then
-            local prev = vim.api.nvim_get_current_win()
-            vim.cmd("below 3split")
-            vim.api.nvim_win_set_buf(vim.api.nvim_get_current_win(), buf)
-            win = vim.api.nvim_get_current_win()
-            vim.api.nvim_set_current_win(prev)
-        end
-    end
+function clearBQN(from, to)
+  vim.api.nvim_buf_clear_namespace(0, ns, from, to)
 end
 
 function evalBQN(from, to, pretty)
-    local code = vim.api.nvim_buf_get_lines(0, from - 1, to, true)
+    if to < 0 then
+      to = vim.api.nvim_buf_line_count(0) + to + 1
+    end
+    -- Compute `to` position by looking back till we find first non-empty line.
+    while to > 0 do
+      local line = vim.api.nvim_buf_get_lines(0, to - 1, to, true)[1]
+      if #line ~= 0 and line:find("^%s*#") == nil then break end
+      to = to - 1
+    end
 
+    if from > to then
+      from = to
+    end
+
+    to = math.max(to, 1)
+    from = math.max(from, 0)
+
+    local code = vim.api.nvim_buf_get_lines(0, from, to, true)
     local program = ""
     for k, v in ipairs(code) do
         program = program .. v .. "\n"
@@ -49,25 +41,43 @@ function evalBQN(from, to, pretty)
     if not found then
         bqn = "BQN"
     end
-
-    local executable = assert(io.popen(bqn .. " -" .. flag .. " \"" .. program .. "\""))
+    local cmd = bqn .. " -" .. flag .. " \"" .. program .. "\""
+    local executable = assert(io.popen(cmd))
     local output = executable:read('*all')
-    executable:close()
-
-    check_buf()
 
     local lines = {}
     local line_count = 0
+    local is_error = nil
     for line in output:gmatch("[^\n]+") do
-        table.insert(lines, line)
+        if is_error == nil then
+          is_error = line:find("^Error:") ~= nil
+        end
+        local hl = 'bqnoutok'
+        if is_error then hl = 'bqnouterr' end
+        table.insert(lines, {{' ' .. line, hl}})
         line_count = line_count + 1
     end
+    table.insert(lines, {{' ', 'bqnoutok'}})
 
-    vim.api.nvim_buf_set_lines(buf, -1, -1, false, lines)
-    vim.api.nvim_win_set_height(win, line_count)
-    vim.api.nvim_win_set_cursor(win, {vim.api.nvim_buf_line_count(buf), 0})
+    -- Compute `cto` (clear to) position by looking forward from `to` till we
+    -- find first non-empty line. We do this so we clear all "orphaned" virtual
+    -- line blocks (which correspond to already deleted lines).
+    local total_lines = vim.api.nvim_buf_line_count(0)
+    local cto = to
+    while cto < total_lines do
+      local line = vim.api.nvim_buf_get_lines(0, cto, cto + 1, true)[1]
+      if #line ~= 0 and line:find("^%s*#") == nil then break end
+      cto = cto + 1
+    end
+
+    vim.api.nvim_buf_clear_namespace(0, ns, to - 1, cto)
+    vim.api.nvim_buf_set_extmark(0, ns, to - 1, 0, {
+      end_line = to - 1,
+      virt_lines=lines
+    })
 end
 
 return {
     evalBQN = evalBQN,
+    clearBQN = clearBQN,
 }
