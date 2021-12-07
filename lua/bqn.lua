@@ -1,6 +1,15 @@
 local ns = vim.api.nvim_create_namespace('bqnout')
 
+local function enumerate(it)
+  local idx, v = 0, nil
+  return function()
+    v, idx = it(), idx + 1
+    return v, idx
+  end
+end
+
 function clearBQN(from, to)
+  vim.diagnostic.reset(ns, 0)
   vim.api.nvim_buf_clear_namespace(0, ns, from, to)
 end
 
@@ -45,19 +54,36 @@ function evalBQN(from, to, pretty)
     local executable = assert(io.popen(cmd))
     local output = executable:read('*all')
 
+    local error = nil
     local lines = {}
-    local line_count = 0
-    local is_error = nil
-    for line in output:gmatch("[^\n]+") do
-        if is_error == nil then
-          is_error = line:find("^Error:") ~= nil
+    for line, lnum in enumerate(output:gmatch("[^\n]+")) do
+        if lnum == 1 then
+          local message = line:gsub("^Error: (.*)", "%1")
+          if message ~= line then
+            error = {message=message}
+          end
+        end
+        if error ~= nil and lnum == 2 then
+          local lnum = line:gsub("^%(%-p%):(%d+):", "%1")
+          error.lnum = tonumber(lnum) + from - 1
         end
         local hl = 'bqnoutok'
-        if is_error then hl = 'bqnouterr' end
+        if error ~= nil then hl = 'bqnouterr' end
         table.insert(lines, {{' ' .. line, hl}})
-        line_count = line_count + 1
     end
     table.insert(lines, {{' ', 'bqnoutok'}})
+
+    -- Reset and show diagnostics
+    vim.diagnostic.reset(ns, 0)
+    if error ~= nil and error.lnum ~= nil then
+      vim.diagnostic.set(ns, 0, {{
+        message=error.message,
+        lnum=error.lnum,
+        col=0,
+        severity=vim.diagnostic.severity.ERROR,
+        source='BQN',
+      }})
+    end
 
     -- Compute `cto` (clear to) position by looking forward from `to` till we
     -- find first non-empty line. We do this so we clear all "orphaned" virtual
