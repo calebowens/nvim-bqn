@@ -11,6 +11,7 @@ end
 function clearBQN(from, to)
   vim.diagnostic.reset(ns, 0)
   vim.api.nvim_buf_clear_namespace(0, ns, from, to)
+  vim.api.nvim_command("redraw!")
 end
 
 function evalBQN(from, to, pretty)
