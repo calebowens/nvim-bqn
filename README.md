@@ -28,4 +28,4 @@ pretty prints the result of the last evaluated line in the range.
 
 ## Demo
 
-[![demo](https://asciinema.org/a/oEvbrZ8nqAhswiSGNuPbRHU6E.svg)](https://asciinema.org/a/oEvbrZ8nqAhswiSGNuPbRHU6E)
+[![demo](https://asciinema.org/a/5Mj03OEez31CtY2817tDfHMm3.svg)](https://asciinema.org/a/5Mj03OEez31CtY2817tDfHMm3)
