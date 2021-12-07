@@ -102,6 +102,14 @@ function evalBQN(from, to, pretty)
       end_line = to - 1,
       virt_lines=lines
     })
+
+    local botline = vim.fn.line("w$")
+    if to + #lines > botline then
+      local cur_line = vim.fn.getpos('.')[2]
+      if cur_line == to then
+        vim.api.nvim_command('normal zz')
+      end
+    end
 end
 
 return {
