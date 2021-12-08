@@ -110,6 +110,8 @@ function evalBQN(from, to, pretty)
         vim.api.nvim_command('normal zz')
       end
     end
+
+    vim.api.nvim_command("redraw!")
 end
 
 return {
