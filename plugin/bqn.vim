@@ -27,7 +27,7 @@ hi link bqnouterr Error
 
 command! BQNEvalTillLine call BQNEvalTillLine()
 command! -range BQNEvalRange <line1>,<line2>call BQNEvalRange()
-command! BQNEvalFile :lua require("bqn").evalBQN(0, -1, true)
+command! BQNEvalFile :lua require("bqn").evalBQN(0, -1, false)
 
 command! BQNClearAfterLine call BQNClearAfterLine()
 command! -range BQNClearRange <line1>,<line2>call BQNClearRange()
