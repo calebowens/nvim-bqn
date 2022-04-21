@@ -51,7 +51,11 @@ function evalBQN(from, to, pretty)
     if not found then
         bqn = "BQN"
     end
-    local cmd = bqn .. " -" .. flag .. " \"" .. program .. "\""
+
+    -- FIXME: Lua's io.popen() does not support reading stderr, nor combining
+    -- stdout and stderr to a single stream. Using 2>&1 to combine the streams
+    -- in the meantime.
+    local cmd = bqn .. " -" .. flag .. " \"" .. program .. "\"" .. " 2>&1"
     local executable = assert(io.popen(cmd))
     local output = executable:read('*all')
 
