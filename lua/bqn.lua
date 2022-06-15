@@ -58,6 +58,7 @@ function evalBQN(from, to, pretty)
     local cmd = bqn .. " -" .. flag .. " \"" .. program .. "\"" .. " 2>&1"
     local executable = assert(io.popen(cmd))
     local output = executable:read('*all')
+    executable:close()
 
     local error = nil
     local lines = {}
