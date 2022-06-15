@@ -104,8 +104,7 @@ function evalBQN(from, to, pretty)
 
     vim.api.nvim_buf_clear_namespace(0, ns, to - 1, cto)
     vim.api.nvim_buf_set_extmark(0, ns, to - 1, 0, {
-      end_line = to - 1,
-      virt_lines=lines
+      virt_lines=lines,
     })
 
     local botline = vim.fn.line("w$")
