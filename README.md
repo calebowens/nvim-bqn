@@ -27,6 +27,7 @@ By default, enter evaluates a the file from the beginning to the line that the c
 - `<leader>bc` will remove the inline results from the cursor to the end of the file
 - `<leader>bc` with a range will remove the inline results within that range
 - `<leader>bC` will remove the inline results from the whole file
+- `<leader>be` will run expression explainer for a line. Note that the explainer has only the context of the single line and variables may be uninitialized because of it.
 
 ## Demo
 

@@ -14,7 +14,7 @@ function clearBQN(from, to)
   vim.api.nvim_command("redraw!")
 end
 
-function evalBQN(from, to, pretty)
+function computeCoords(from, to)
     if to < 0 then
       to = vim.api.nvim_buf_line_count(0) + to + 1
     end
@@ -29,23 +29,29 @@ function evalBQN(from, to, pretty)
       from = to
     end
 
-    to = math.max(to, 1)
     from = math.max(from, 0)
+    to = math.max(to, 1)
 
+    return from, to
+end
+
+function getSelection(from, to)
     local code = vim.api.nvim_buf_get_lines(0, from, to, true)
-    local program = ""
+    local ret = ""
     for k, v in ipairs(code) do
-        program = program .. v .. "\n"
+        ret = ret .. v .. "\n"
     end
 
     -- Escape input for shell
-    program = string.gsub(program, '"', '\\"')
-    program = string.gsub(program, '`', '\\`')
+    ret = string.gsub(ret, '"', '\\"')
+    ret = string.gsub(ret, '`', '\\`')
 
-    local flag = "e"
-    if pretty then
-        flag = "p"
-    end
+    return ret
+end
+
+function evalBQN(from, to, explain)
+    from, to = computeCoords(from, to)
+    program = getSelection(from, to)
 
     local found, bqn = pcall(vim.api.nvim_get_var, "nvim_bqn")
     if not found then
@@ -55,10 +61,16 @@ function evalBQN(from, to, pretty)
     -- FIXME: Lua's io.popen() does not support reading stderr, nor combining
     -- stdout and stderr to a single stream. Using 2>&1 to combine the streams
     -- in the meantime.
-    local cmd = bqn .. " -" .. flag .. " \"" .. program .. "\"" .. " 2>&1"
-    local executable = assert(io.popen(cmd))
-    local output = executable:read('*all')
-    executable:close()
+    local cmd = bqn .. " -"
+    if explain then
+        cmd = "printf \")e " .. program .. "\" | " .. cmd .. "s 2>&1"
+    else
+        cmd = cmd .. "p \"" .. program .. "\" 2>&1"
+    end
+
+    local p = assert(io.popen(cmd))
+    local output = p:read('*all')
+    p:close()
 
     local error = nil
     local lines = {}
@@ -69,7 +81,7 @@ function evalBQN(from, to, pretty)
             error = {message=message}
           end
         end
-        if error ~= nil and lnum == 2 then
+        if error ~= nil and lnum == 2 and not explain then
           local lnum = line:gsub("^%(%-p%):(%d+):", "%1")
           error.lnum = tonumber(lnum) + from - 1
         end

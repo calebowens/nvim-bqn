@@ -1,6 +1,7 @@
 nmap <buffer> <CR> <plug>(bqn_eval_till_line)
 xmap <buffer> <CR> <plug>(bqn_eval_range)
 nmap <buffer> <leader>bf <plug>(bqn_eval_file)
+nmap <buffer> <leader>be <plug>(bqn_explain)
 nmap <buffer> <leader>bc <plug>(bqn_clear_after_line)
 nmap <buffer> <leader>bC <plug>(bqn_clear_file)
 xmap <buffer> <leader>bc <plug>(bqn_clear_range)
