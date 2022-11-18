@@ -59,6 +59,12 @@ function evalBQN(from, to, explain)
         bqn = "BQN"
     end
 
+    -- NOTE: BQN imports from relative paths only work by setting the
+    -- working directory to that of the script. We will set it back
+    -- afterwards.
+    local origdir = vim.api.nvim_eval("getcwd()")
+    local bufdir = vim.fn.expand("%:p:h")
+
     -- FIXME: Lua's io.popen() does not support reading stderr, nor combining
     -- stdout and stderr to a single stream. Using 2>&1 to combine the streams
     -- in the meantime.
@@ -69,9 +75,11 @@ function evalBQN(from, to, explain)
         cmd = cmd .. "p \"" .. program .. "\" 2>&1"
     end
 
+    vim.cmd.cd(bufdir)
     local p = assert(io.popen(cmd))
     local output = p:read('*all')
     p:close()
+    vim.cmd.cd(origdir)
 
     local error = nil
     local lines = {}
