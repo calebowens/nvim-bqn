@@ -43,7 +43,7 @@ function getSelection(from, to)
     end
 
     -- Escape input for shell
-    ret = string.gsub(ret, '\\"', '\\\\"') -- Fix possible pre-escaped strings
+    ret = string.gsub(ret, '\\', '\\\\')
     ret = string.gsub(ret, '"', '\\"')
     ret = string.gsub(ret, '`', '\\`')
 
