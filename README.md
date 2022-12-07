@@ -29,6 +29,10 @@ By default, enter evaluates a the file from the beginning to the line that the c
 - `<leader>bC` will remove the inline results from the whole file
 - `<leader>be` will run expression explainer for a line. Note that the explainer has only the context of the single line and variables may be uninitialized because of it.
 
+## File extensions are not detected and syntax highlighting is missing!
+
+This plugin only provides the REPL-like functionality within the editor. For file extensions, syntax highlighting and keyboard maps, use the plugin from [mlochbaum/BQN](https://github.com/mlochbaum/BQN/tree/master/editors/vim).
+
 ## Demo
 
 [![demo](https://asciinema.org/a/5Mj03OEez31CtY2817tDfHMm3.svg)](https://asciinema.org/a/5Mj03OEez31CtY2817tDfHMm3)
