@@ -8,7 +8,7 @@ Use your favourite plugin manager (or install manually). My plugin manager of ch
 ```
 call plug#begin('~/.config/nvim/plugged')
 Plug 'git@git.sr.ht:~detegr/nvim-bqn'
-call plug#end
+call plug#end()
 ```
 
 ## Configuration
